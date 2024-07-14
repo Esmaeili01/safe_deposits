@@ -23,17 +23,12 @@ use LDAP\Result;
 
     if(1) {
         $tag = "55 11 22 AA";
-        $sql = "SELECT * FROM cap_log WHERE (`rfid_card` = '$tag')";
+        $sql = "SELECT * FROM boxes WHERE (`rfid_card` = '$tag')";
         $result = $con->query($sql);
         if($result->num_rows > 0){
             $rows = $result->fetch_assoc();
-            $boxIndex = $rows["box_index"];
-            $sql = "DELETE FROM cap_log WHERE (`rfid_card` = '$tag')";
-            $con->query($sql);
-            $sql = "INSERT INTO empty_boxes (index_box) VALUE ('$boxIndex')";
-            $con->query($sql);
-            echo "TAKE OUT done";
- 
+            $box_num = $rows['id'];
+            echo $box_num ; 
         }
         else{
             $sql = "SELECT * FROM data_info WHERE (`rfid_card` = '$tag')";
@@ -42,26 +37,21 @@ use LDAP\Result;
             $first_name = $rows["first_name"];
             $last_name = $rows["last_name"];
             $student_id = $rows["student_id"];
+            
             $hourInt = $hourInt + $expire;
 
-            $sql = "SELECT * FROM empty_boxes LIMIT 1";
+            $sql = "SELECT * FROM boxes WHERE isEmpty = 1 LIMIT 1";
             $result = $con->query($sql);
             if($result->num_rows > 0){
 
                 $rows = $result->fetch_assoc();
-                $personBox = $rows["index_box"];
-    
-                $sql = "DELETE FROM empty_boxes WHERE (`index_box` = '$personBox')";
+                $box_num = $rows['id'];
+                $sql = "UPDATE boxes SET isEmpty = 0 , student_id = '$student_id' WHERE (`id` = '$box_num' )"; // set  rest 
                 $con->query($sql);
-    
-                $sql = "INSERT INTO cap_log (rfid_card, first_name, last_name,  start_time, exp_time , box_index) VALUES 
-                ('$tag', '$first_name', '$last_name','$nowTime', '$hourInt', '$personBox')";
-                $result = $con->query($sql);
-                echo "PUT IN done"; // open the door
-
+                echo $box_num;
             }
             else{
-                echo "No More BOXES!";
+                echo "-1";
             }
 
           
